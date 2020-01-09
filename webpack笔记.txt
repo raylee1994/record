@@ -1,0 +1,75 @@
+﻿babel的使用：
+1、.babelrc配置
+{
+  "presets": [
+    ["env", {
+      "modules": false,
+      "targets": {
+        "browsers": ["ie >= 8"]
+      }，
+      "useBuiltIns": true
+    }],
+    "stage-2"
+  ],
+  "plugins": ["transform-runtime"]
+}
+说明：
+有没有什么插件会根据配置好的对浏览器的支持程度来自动做polyfill呢。babel-preset-env(替代babel-preset-es2015)就是干这件事情的，比如它会根据如下配置来对「大部分浏览器最新的两个版本以及safari 7+」进行polyfill，包括语法和API。
+全局babel-polyfill(使用babel-preset-env插件和useBuiltIns属性)：
+
+使用方法
+
+packge.json引入依赖babel-preset-env
+
+.babelrc中使用配置preset-env
+
+指定useBuiltins选项为true( 优点： 按需(按照指定的浏览器环境所需)引入polyfill, 一定程度上减少了不必要polyfill的引入 )
+
+指定浏览器环境或node环境,  配置需要兼容的浏览器列表
+在webpack入口文件中使用import/require引入polyfill, 如import 'babel-polyfill'
+
+以上配置完成之后, babel会根据指定的浏览器兼容列表自动引入所有所需的polyfill, 不管你代码中有没有使用
+
+babel-runtime:
+
+babel-polyfill解决了Babel不转换新API的问题，但是直接在代码中插入帮助函数，会导致污染了全局环境，并且不同的代码文件中包含重复的代码，导致编译后的代码体积变大。 （比如：上述的帮助函数_defineProperty有可能在很多的代码模块文件中都会被插入）
+Babel为了解决这个问题，提供了单独的包babel-runtime用以提供编译模块的工具函数， 启用插件babel-plugin-transform-runtime后，Babel就会使用babel-runtime下的工具函数
+
+tips: 使tree shaking生效需设置 modules:false
+modules (string, 默认值: "commonjs")
+将ES6模块语法转换为另一种模块类型，可选值:
+
+各种流行的模块化规范："amd"、 "commonjs"、 "systemjs"、 "umd"
+禁止转译：false
+
+tree shaking 基于 ES6 的静态引用，tree shaking 通过扫描所有 ES6 的 export，找出被 import 的内容并添加到最终代码中。 webpack 的实现是把所有 import 标记为有使用/无使用两种，在后续压缩时进行区别处理。
+
+
+
+
+引入模块：
+modules: [//添加的配置
+      resolve('src'),
+      resolve('node_modules')
+    ],
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js',
+      '@': resolve('src'),
+    }
+webpack 提供了一种解析文件的高级机制。less-loader 应用一个 Less 插件，并且将所有查询参数传递给 webpack resolver。所以，你可以从 node_modules 导入你的 less 模块。只要加一个 ~ 前缀，告诉 webpack 去查询模块。
+
+~ 视为模块解析是 webpack 做的事，不是 css-loader 做的事。
+各类非 js 直接引用（import require）静态资源，依赖相对路径加载问题，都可以用 ~ 语法完美解决；
+
+css module 中： @import "~@/style/theme"
+
+css 属性中： background: url("~@/assets/xxx.jpg")
+
+html 标签中： <img src="~@/assets/xxx.jpg" alt="alias">
+
+
+
+
+
+注意：
+热更新(HMR)不能和[chunkhash]同时使用。
